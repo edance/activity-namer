@@ -20,14 +20,18 @@ defmodule Namer.ActivityRenamer do
     end
   end
 
-  def rename(_, %DetailedActivity{manual: true} = activity), do: activity
-
   def rename(user, %DetailedActivity{} = activity) do
-    if activity.device_name =~ "Strava" do # Skip all Strava Apps
+    if skippable?(activity) do
+      Logger.info("Skipping #{activity.id}: #{name}")
       activity
     else
       rename_activity(user, activity)
     end
+  end
+
+  # Skip all Strava Apps
+  def skippable?(%DetailedActivity{device_name: device_name, manual: manual}) do
+    device_name =~ "Strava" || manual
   end
 
   defp rename_activity(user, activity) do
